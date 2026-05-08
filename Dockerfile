@@ -6,12 +6,12 @@ COPY . .
 
 RUN apt-get update && apt-get install -y \
     unzip git curl libzip-dev zip \
-    && docker-php-ext-install zip
+    && docker-php-ext-install zip pdo pdo_mysql
 
-# Composer install
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 RUN composer install --no-dev --optimize-autoloader
-RUN php artisan config:clear
-RUN php artisan cache:clear
-CMD php -S 0.0.0.0:10000 -t public
+
+RUN chmod -R 775 storage bootstrap/cache
+
+CMD php artisan serve --host=0.0.0.0 --port=10000
