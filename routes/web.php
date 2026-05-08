@@ -5,7 +5,10 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
 });
 
 Route::get('/dashboard', function () {
@@ -23,10 +26,13 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('generate')->name('generate.')->group(function () {
         Route::get('/', [DocumentGenerationController::class, 'index'])->name('index');
+        Route::get('/my-documents', [DocumentGenerationController::class, 'myDocuments'])->name('myDocuments');
         Route::get('/banks', [DocumentGenerationController::class, 'selectBank'])->name('banks');
         Route::get('/banks/{bank}/templates', [DocumentGenerationController::class, 'selectTemplate'])->name('templates');
         Route::get('/templates/{template}/form', [DocumentGenerationController::class, 'showForm'])->name('form');
         Route::post('/templates/{template}/generate', [DocumentGenerationController::class, 'generate'])->name('store');
+        Route::get('/documents/{document}/edit', [DocumentGenerationController::class, 'editDraft'])->name('editDraft');
+        Route::put('/documents/{document}/edit', [DocumentGenerationController::class, 'updateDraft'])->name('updateDraft');
         Route::get('/documents/{document}/preview', [DocumentGenerationController::class, 'preview'])->name('preview');
         Route::post('/documents/{document}/finalize', [DocumentGenerationController::class, 'finalize'])->name('finalize');
         Route::get('/documents/{document}/print', [DocumentGenerationController::class, 'print'])->name('print');

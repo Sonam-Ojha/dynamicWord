@@ -5,6 +5,7 @@
         ['route' => 'admin.categories.index', 'label' => 'Categories', 'permission' => 'manage categories', 'icon' => 'tag'],
         ['route' => 'admin.templates.index',  'label' => 'Templates',  'permission' => 'manage templates',  'icon' => 'document'],
         ['route' => 'admin.documents.index',  'label' => 'Documents',  'permission' => 'manage documents',  'icon' => 'document-text'],
+        ['route' => 'admin.download-logs.index', 'label' => 'Download Logs', 'permission' => 'view download logs', 'icon' => 'document-text'],
         ['route' => 'admin.signatures.index', 'label' => 'Signatures', 'permission' => 'manage signatures', 'icon' => 'pencil'],
         ['route' => 'admin.users.index', 'label' => 'Users', 'permission' => 'manage users', 'icon' => 'users'],
         ['route' => 'admin.roles.index', 'label' => 'Roles', 'permission' => 'manage roles', 'icon' => 'shield'],

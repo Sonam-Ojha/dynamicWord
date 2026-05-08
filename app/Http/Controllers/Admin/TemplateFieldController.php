@@ -77,6 +77,37 @@ class TemplateFieldController extends Controller
         return back()->with('success', 'Status updated.');
     }
 
+    public function bulkToggle(Request $request, Template $template): RedirectResponse
+    {
+        $ids = $request->input('field_ids', []);
+        $action = $request->input('bulk_action');
+
+        if (empty($ids) || ! in_array($action, ['enable', 'disable', 'require', 'unrequire', 'delete'], true)) {
+            return back()->with('error', 'Select fields and choose an action.');
+        }
+
+        $query = $template->fields()->whereIn('id', $ids);
+        $count = (clone $query)->count();
+
+        match ($action) {
+            'enable' => $query->update(['status' => true]),
+            'disable' => $query->update(['status' => false]),
+            'require' => $query->update(['is_required' => true]),
+            'unrequire' => $query->update(['is_required' => false]),
+            'delete' => $query->delete(),
+        };
+
+        $verb = match ($action) {
+            'enable' => 'shown in form',
+            'disable' => 'hidden from form',
+            'require' => 'marked required',
+            'unrequire' => 'marked optional',
+            'delete' => 'deleted',
+        };
+
+        return back()->with('success', "{$count} field(s) {$verb}.");
+    }
+
     public function sync(Template $template): View
     {
         $placeholders = $this->extractPlaceholders($template->html_content ?? '');

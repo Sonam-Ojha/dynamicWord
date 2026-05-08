@@ -23,8 +23,5 @@
             </dl>
         </x-admin.card>
 
-        <x-admin.card title="Form Data">
-            <pre class="text-xs bg-slate-50 p-3 rounded overflow-x-auto">{{ json_encode($document->form_data, JSON_PRETTY_PRINT) }}</pre>
-        </x-admin.card>
     </div>
 @endsection

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bank;
+use App\Models\DocumentDownload;
 use App\Models\GeneratedDocument;
 use App\Models\Template;
 use App\Services\FileUploadService;
@@ -12,6 +13,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Auth;
 
 class DocumentGenerationController extends Controller
 {
@@ -36,6 +38,30 @@ class DocumentGenerationController extends Controller
             ->get();
 
         return view('frontend.dashboard', compact('stats', 'myDocs'));
+    }
+
+    public function myDocuments(Request $request): View
+    {
+        $userId = auth()->id();
+
+        $documents = GeneratedDocument::query()
+            ->where('user_id', $userId)
+            ->with(['bank', 'template'])
+            ->when($request->input('q'), fn ($q, $v) => $q->where('document_number', 'like', "%{$v}%"))
+            ->when($request->input('status'), fn ($q, $v) => $q->where('status', $v))
+            ->when($request->input('bank_id'), fn ($q, $v) => $q->where('bank_id', $v))
+            ->when($request->input('from'), fn ($q, $v) => $q->whereDate('created_at', '>=', $v))
+            ->when($request->input('to'), fn ($q, $v) => $q->whereDate('created_at', '<=', $v))
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        $banks = Bank::active()
+            ->whereIn('id', GeneratedDocument::where('user_id', $userId)->distinct('bank_id')->pluck('bank_id'))
+            ->orderBy('bank_name')
+            ->get(['id', 'bank_name']);
+
+        return view('frontend.documents', compact('documents', 'banks'));
     }
 
     public function selectBank(): View
@@ -75,10 +101,85 @@ class DocumentGenerationController extends Controller
         abort_unless($template->status, 404);
 
         $fields = $template->fields()->where('status', true)->orderBy('sort_order')->get();
+        $isDraft = $request->input('action') === 'draft';
 
+        $this->validateFields($request, $fields, $isDraft);
+
+        $data = $this->collectFieldData($request, $fields);
+
+        $document = GeneratedDocument::create([
+            'user_id' => auth()->id(),
+            'bank_id' => $template->bank_id,
+            'template_id' => $template->id,
+            'document_number' => $this->makeDocumentNumber($template),
+            'form_data' => $data,
+            'status' => 'draft',
+        ]);
+
+        if ($isDraft) {
+            return redirect()->route('generate.editDraft', $document)
+                ->with('success', 'Draft saved. Aap baad me wapas aakar fill kar sakte ho.');
+        }
+
+        return redirect()->route('generate.preview', $document);
+    }
+
+    public function editDraft(GeneratedDocument $document): View
+    {
+        $this->authorizeDocument($document);
+        abort_unless($document->status === 'draft', 403, 'Sirf drafts edit ho sakte hain. Ye document already finalized hai.');
+
+        $template = $document->template;
+        abort_unless($template && $template->status, 404);
+
+        $template->load([
+            'bank',
+            'category',
+            'fields' => fn ($q) => $q->where('status', true)->orderBy('sort_order'),
+        ]);
+
+        return view('frontend.form', compact('template', 'document'));
+    }
+
+    public function updateDraft(Request $request, GeneratedDocument $document): RedirectResponse
+    {
+        $this->authorizeDocument($document);
+        abort_unless($document->status === 'draft', 403);
+
+        $template = $document->template;
+        abort_unless($template && $template->status, 404);
+
+        $fields = $template->fields()->where('status', true)->orderBy('sort_order')->get();
+        $isDraft = $request->input('action') === 'draft';
+
+        $this->validateFields($request, $fields, $isDraft);
+
+        $existing = $document->form_data ?? [];
+        $data = $this->collectFieldData($request, $fields, $existing);
+
+        $document->update(['form_data' => $data]);
+
+        if ($isDraft) {
+            return redirect()->route('generate.editDraft', $document)->with('success', 'Draft updated.');
+        }
+
+        return redirect()->route('generate.preview', $document);
+    }
+
+    private function validateFields(Request $request, $fields, bool $isDraft): void
+    {
         $rules = [];
+
         foreach ($fields as $field) {
             $key = 'fields.'.$field->field_name;
+
+            if ($isDraft) {
+                if (in_array($field->field_type, ['image', 'signature'], true)) {
+                    $rules[$key] = ['nullable', 'image', 'max:4096'];
+                }
+                continue;
+            }
+
             $r = [$field->is_required ? 'required' : 'nullable'];
 
             switch ($field->field_type) {
@@ -91,7 +192,6 @@ class DocumentGenerationController extends Controller
                     $r[] = 'max:4096';
                     break;
                 case 'checkbox':
-                    $r[0] = $field->is_required ? 'required' : 'nullable';
                     $r[] = 'array';
                     break;
             }
@@ -105,31 +205,34 @@ class DocumentGenerationController extends Controller
 
             $rules[$key] = $r;
         }
-        $request->validate($rules);
 
-        $data = [];
+        if ($rules) {
+            $request->validate($rules);
+        }
+    }
+
+    private function collectFieldData(Request $request, $fields, array $existing = []): array
+    {
+        $data = $existing;
+
         foreach ($fields as $field) {
             $key = $field->field_name;
-            $val = $request->input('fields.'.$key);
+            $isFileType = in_array($field->field_type, ['image', 'signature'], true);
 
-            if (in_array($field->field_type, ['image', 'signature'], true)
-                && $request->hasFile('fields.'.$key)) {
-                $val = $this->files->upload($request->file('fields.'.$key), 'documents/inputs');
+            if ($isFileType) {
+                if ($request->hasFile('fields.'.$key)) {
+                    if (! empty($existing[$key])) {
+                        $this->files->delete($existing[$key]);
+                    }
+                    $data[$key] = $this->files->upload($request->file('fields.'.$key), 'documents/inputs');
+                }
+                continue;
             }
 
-            $data[$key] = $val;
+            $data[$key] = $request->input('fields.'.$key);
         }
 
-        $document = GeneratedDocument::create([
-            'user_id' => auth()->id(),
-            'bank_id' => $template->bank_id,
-            'template_id' => $template->id,
-            'document_number' => $this->makeDocumentNumber($template),
-            'form_data' => $data,
-            'status' => 'draft',
-        ]);
-
-        return redirect()->route('generate.preview', $document);
+        return $data;
     }
 
     public function preview(GeneratedDocument $document): View
@@ -169,7 +272,7 @@ class DocumentGenerationController extends Controller
         return view('frontend.print', compact('document', 'rendered'));
     }
 
-    public function download(GeneratedDocument $document): Response
+    public function download(Request $request, GeneratedDocument $document): Response
     {
         $this->authorizeDocument($document);
 
@@ -177,14 +280,64 @@ class DocumentGenerationController extends Controller
             abort(404, 'File not found. Finalize the document first.');
         }
 
-        return response(
-            Storage::disk('public')->get($document->generated_file),
-            200,
-            [
-                'Content-Type' => 'text/html; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="'.$document->document_number.'.html"',
-            ]
-        );
+        $format = strtolower((string) $request->input('format', 'html'));
+        $format = in_array($format, ['html', 'word', 'doc'], true) ? $format : 'html';
+
+        DocumentDownload::create([
+            'user_id' => auth()->id(),
+            'document_id' => $document->id,
+            'template_id' => $document->template_id,
+            'bank_id' => $document->bank_id,
+            'ip_address' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent().' [format:'.$format.']', 0, 500),
+        ]);
+
+        $body = Storage::disk('public')->get($document->generated_file);
+        $name = $document->document_number;
+
+        if ($format === 'word' || $format === 'doc') {
+            return response($this->wrapForWord($body, $name), 200, [
+                'Content-Type' => 'application/vnd.ms-word; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="'.$name.'.doc"',
+            ]);
+        }
+
+        return response($body, 200, [
+            'Content-Type' => 'text/html; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$name.'.html"',
+        ]);
+    }
+
+    private function wrapForWord(string $html, string $title): string
+    {
+        $title = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
+
+        return <<<HTML
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>{$title}</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+        @page { size: A4; margin: 1in; }
+        body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; }
+    </style>
+</head>
+<body>
+{$html}
+</body>
+</html>
+HTML;
     }
 
     private function authorizeDocument(GeneratedDocument $document): void

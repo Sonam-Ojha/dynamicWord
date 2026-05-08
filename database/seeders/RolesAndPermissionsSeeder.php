@@ -24,6 +24,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'manage signatures',
             'manage roles',
             'manage permissions',
+            'view download logs',
         ];
 
         foreach ($permissions as $permission) {
@@ -42,6 +43,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'manage categories',
             'manage documents',
             'manage signatures',
+            'view download logs',
         ]);
 
         $operator = Role::firstOrCreate(['name' => 'Operator', 'guard_name' => 'web']);

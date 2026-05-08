@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DownloadLogController;
 use App\Http\Controllers\Admin\GeneratedDocumentController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
@@ -36,6 +37,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::middleware('permission:manage template fields')->group(function () {
         Route::get('templates/{template}/fields/sync', [TemplateFieldController::class, 'sync'])->name('templates.fields.sync');
         Route::post('templates/{template}/fields/sync', [TemplateFieldController::class, 'bulkSync'])->name('templates.fields.bulk-sync');
+        Route::post('templates/{template}/fields/bulk-toggle', [TemplateFieldController::class, 'bulkToggle'])->name('templates.fields.bulk-toggle');
         Route::resource('templates.fields', TemplateFieldController::class)->shallow();
         Route::patch('fields/{field}/toggle-status', [TemplateFieldController::class, 'toggleStatus'])->name('fields.toggle-status');
     });
@@ -59,5 +61,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::middleware('permission:manage permissions')->group(function () {
         Route::resource('permissions', PermissionController::class)->except('show');
+    });
+
+    Route::middleware('permission:view download logs')->group(function () {
+        Route::get('download-logs', [DownloadLogController::class, 'index'])->name('download-logs.index');
     });
 });
