@@ -16,18 +16,27 @@
         $existing = collect($analysis)->where('exists', true);
     @endphp
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-        <div class="bg-white rounded-lg border border-slate-200 p-4">
-            <div class="text-xs text-slate-500 uppercase">Total placeholders</div>
-            <div class="text-3xl font-semibold text-slate-900">{{ count($analysis) }}</div>
+    <div class="flex flex-wrap gap-3 mb-4 bg-white rounded-lg border border-slate-200 p-4">
+        <div class="flex-1 min-w-[140px] flex items-center gap-3 px-3 py-2 rounded-md border border-slate-200">
+            <div class="w-10 h-10 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center font-bold">{{ count($analysis) }}</div>
+            <div>
+                <div class="text-xs text-slate-500 uppercase">Total</div>
+                <div class="text-sm font-semibold text-slate-900">Placeholders</div>
+            </div>
         </div>
-        <div class="bg-white rounded-lg border border-slate-200 p-4">
-            <div class="text-xs text-slate-500 uppercase">Missing fields</div>
-            <div class="text-3xl font-semibold text-amber-600">{{ $missing->count() }}</div>
+        <div class="flex-1 min-w-[140px] flex items-center gap-3 px-3 py-2 rounded-md border border-amber-200 bg-amber-50">
+            <div class="w-10 h-10 rounded-md bg-amber-600 text-white flex items-center justify-center font-bold">{{ $missing->count() }}</div>
+            <div>
+                <div class="text-xs text-amber-700 uppercase">Missing</div>
+                <div class="text-sm font-semibold text-amber-900">Need to create</div>
+            </div>
         </div>
-        <div class="bg-white rounded-lg border border-slate-200 p-4">
-            <div class="text-xs text-slate-500 uppercase">Already created</div>
-            <div class="text-3xl font-semibold text-green-600">{{ $existing->count() }}</div>
+        <div class="flex-1 min-w-[140px] flex items-center gap-3 px-3 py-2 rounded-md border border-emerald-200 bg-emerald-50">
+            <div class="w-10 h-10 rounded-md bg-emerald-600 text-white flex items-center justify-center font-bold">{{ $existing->count() }}</div>
+            <div>
+                <div class="text-xs text-emerald-700 uppercase">Created</div>
+                <div class="text-sm font-semibold text-emerald-900">Already exist</div>
+            </div>
         </div>
     </div>
 
