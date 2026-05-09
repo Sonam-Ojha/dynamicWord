@@ -3,7 +3,7 @@
 @section('title', 'Preview Document')
 
 @section('steps')
-    @include('frontend.partials.steps', ['current' => 4])
+    @include('frontend.partials.steps', ['current' => 5])
 @endsection
 
 @section('content')
@@ -12,7 +12,7 @@
             <h1 class="text-2xl font-semibold text-slate-900">Preview Document</h1>
             <p class="text-slate-500">
                 Document #<span class="font-medium text-slate-700">{{ $document->document_number }}</span>
-                · {{ $document->bank?->bank_name }} · {{ $document->template?->template_name }}
+                · {{ $document->bank?->bank_name }}@if ($document->branch) ({{ $document->branch->branch_name }})@endif · {{ $document->template?->template_name }}
                 ·
                 <span class="rounded-full px-2 py-0.5 text-xs
                     {{ $document->status === 'generated' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700' }}">

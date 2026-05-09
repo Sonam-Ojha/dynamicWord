@@ -3,7 +3,7 @@
 @section('title', 'Fill Document')
 
 @section('steps')
-    @include('frontend.partials.steps', ['current' => 3])
+    @include('frontend.partials.steps', ['current' => 4])
 @endsection
 
 @php
@@ -48,7 +48,6 @@
             <h1 class="text-2xl font-semibold text-slate-900">{{ $template->template_name }}</h1>
             <p class="text-slate-500">
                 <span class="font-medium text-slate-700">{{ $template->bank?->bank_name }}</span>
-                @if ($template->category) · {{ $template->category->category_name }} @endif
                 @if ($document)
                     · <span class="rounded-full bg-amber-100 text-amber-700 text-xs px-2 py-0.5">Resuming draft #{{ $document->document_number }}</span>
                 @endif
@@ -63,7 +62,7 @@
                 </svg>
                 <span x-text="showPreview ? 'Hide Preview' : 'Show Live Preview'"></span>
             </button>
-            <a href="{{ route('generate.templates', $template->bank_id) }}" class="text-sm text-slate-600 hover:text-indigo-600">← Change template</a>
+            <a href="{{ route('generate.branches', $template->bank_id) }}" class="text-sm text-slate-600 hover:text-indigo-600">← Change branch/template</a>
         </div>
     </div>
 
@@ -79,6 +78,29 @@
                       class="bg-white border border-slate-200 rounded-lg p-5">
                     @csrf
                     @if ($formMethod === 'PUT') @method('PUT') @endif
+
+                    @php
+                        $currentBranchId = old('branch_id', $document?->branch_id ?? request('branch') ?? $template->branch_id ?? null);
+                    @endphp
+                    <div class="mb-4 pb-4 border-b border-slate-200">
+                        <label for="branch_id" class="block text-sm font-medium text-slate-700 mb-1">
+                            Bank Branch <span class="text-red-500">*</span>
+                        </label>
+                        <select id="branch_id" name="branch_id"
+                                class="block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            <option value="">— Select Branch —</option>
+                            @foreach (($branches ?? []) as $br)
+                                <option value="{{ $br->id }}" @selected($currentBranchId == $br->id)>
+                                    {{ $br->branch_name }}@if ($br->branch_code) ({{ $br->branch_code }})@endif
+                                    @if ($br->city) — {{ $br->city }} @endif
+                                </option>
+                            @endforeach
+                        </select>
+                        @if (($branches ?? collect())->isEmpty())
+                            <p class="mt-1 text-xs text-amber-600">Is bank ki koi active branch nahi hai. Admin se contact karein.</p>
+                        @endif
+                        @error('branch_id') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    </div>
 
                     <div :class="showPreview ? 'form-grid-1' : 'form-grid-4'">
                         @foreach ($template->fields as $field)

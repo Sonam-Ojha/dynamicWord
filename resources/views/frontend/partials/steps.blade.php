@@ -3,9 +3,10 @@
 @php
     $steps = [
         1 => 'Bank',
-        2 => 'Template',
-        3 => 'Form',
-        4 => 'Preview',
+        2 => 'Branch',
+        3 => 'Template',
+        4 => 'Form',
+        5 => 'Preview',
     ];
 @endphp
 

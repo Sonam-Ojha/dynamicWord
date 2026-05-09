@@ -17,12 +17,6 @@
                         <option value="{{ $b->id }}" @selected(request('bank_id') == $b->id)>{{ $b->bank_name }}</option>
                     @endforeach
                 </select>
-                <select name="category_id" class="rounded-md border-slate-300 text-sm">
-                    <option value="">All Categories</option>
-                    @foreach ($categories as $c)
-                        <option value="{{ $c->id }}" @selected(request('category_id') == $c->id)>{{ $c->category_name }}</option>
-                    @endforeach
-                </select>
             </x-admin.search-bar>
         </div>
 
@@ -33,7 +27,7 @@
                         <th class="px-4 py-3 text-left">Name</th>
                         <th class="px-4 py-3 text-left">Code</th>
                         <th class="px-4 py-3 text-left">Bank</th>
-                        <th class="px-4 py-3 text-left">Category</th>
+                        <th class="px-4 py-3 text-left">Branch</th>
                         <th class="px-4 py-3 text-left">Status</th>
                         <th class="px-4 py-3 text-right">Actions</th>
                     </tr>
@@ -44,7 +38,7 @@
                             <td class="px-4 py-3 font-medium">{{ $template->template_name }}</td>
                             <td class="px-4 py-3 text-slate-600">{{ $template->template_code }}</td>
                             <td class="px-4 py-3">{{ $template->bank?->bank_name }}</td>
-                            <td class="px-4 py-3">{{ $template->category?->category_name }}</td>
+                            <td class="px-4 py-3 text-slate-600">{{ $template->branch?->branch_name ?? 'Any' }}</td>
                             <td class="px-4 py-3">
                                 <x-admin.status-toggle :action="route('admin.templates.toggle-status', $template)" :active="$template->status" />
                             </td>

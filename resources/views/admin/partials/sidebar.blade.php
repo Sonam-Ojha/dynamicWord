@@ -2,7 +2,7 @@
     $navItems = [
         ['route' => 'admin.dashboard',  'label' => 'Dashboard',   'permission' => 'view dashboard',        'icon' => 'home'],
         ['route' => 'admin.banks.index','label' => 'Banks',       'permission' => 'manage banks',          'icon' => 'building'],
-        ['route' => 'admin.categories.index', 'label' => 'Categories', 'permission' => 'manage categories', 'icon' => 'tag'],
+        ['route' => 'admin.bank-branches.index','label' => 'Bank Branches', 'permission' => 'manage bank branches', 'icon' => 'building'],
         ['route' => 'admin.templates.index',  'label' => 'Templates',  'permission' => 'manage templates',  'icon' => 'document'],
         ['route' => 'admin.documents.index',  'label' => 'Documents',  'permission' => 'manage documents',  'icon' => 'document-text'],
         ['route' => 'admin.download-logs.index', 'label' => 'Download Logs', 'permission' => 'view download logs', 'icon' => 'document-text'],

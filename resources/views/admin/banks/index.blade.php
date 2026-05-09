@@ -20,6 +20,7 @@
                         <th class="px-4 py-3 text-left">Logo</th>
                         <th class="px-4 py-3 text-left">Name</th>
                         <th class="px-4 py-3 text-left">Code</th>
+                        <th class="px-4 py-3 text-left">Branches</th>
                         <th class="px-4 py-3 text-left">Status</th>
                         <th class="px-4 py-3 text-right">Actions</th>
                     </tr>
@@ -37,6 +38,12 @@
                             <td class="px-4 py-3 font-medium">{{ $bank->bank_name }}</td>
                             <td class="px-4 py-3 text-slate-600">{{ $bank->bank_code }}</td>
                             <td class="px-4 py-3">
+                                <a href="{{ route('admin.bank-branches.index', ['bank_id' => $bank->id]) }}"
+                                   class="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-xs hover:bg-indigo-100 hover:text-indigo-700">
+                                    {{ $bank->branches_count ?? 0 }} branches
+                                </a>
+                            </td>
+                            <td class="px-4 py-3">
                                 <x-admin.status-toggle :action="route('admin.banks.toggle-status', $bank)" :active="$bank->status" />
                             </td>
                             <td class="px-4 py-3 text-right space-x-3">
@@ -45,7 +52,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">No banks found.</td></tr>
+                        <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No banks found.</td></tr>
                     @endforelse
                 </tbody>
             </table>

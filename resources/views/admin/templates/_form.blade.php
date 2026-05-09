@@ -1,13 +1,45 @@
 @csrf
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <x-admin.select label="Bank" name="bank_id" required
-        :options="$banks->pluck('bank_name', 'id')->all()"
-        :value="$template->bank_id ?? null" />
+@php
+    $currentBankId = old('bank_id', $template->bank_id ?? '');
+    $currentBranchId = old('branch_id', $template->branch_id ?? '');
+    $branchesJson = ($branches ?? collect())->map(fn ($b) => [
+        'id' => $b->id, 'bank_id' => $b->bank_id,
+        'label' => $b->branch_name . ($b->branch_code ? ' ('.$b->branch_code.')' : ''),
+    ])->values();
+@endphp
 
-    <x-admin.select label="Category" name="category_id" required
-        :options="$categories->pluck('category_name', 'id')->all()"
-        :value="$template->category_id ?? null" />
+<div x-data='{
+        bankId: @json((string) $currentBankId),
+        branchId: @json((string) $currentBranchId),
+        branches: @json($branchesJson),
+        get filtered() { return this.branches.filter(b => String(b.bank_id) === String(this.bankId)); }
+     }'
+     class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Bank <span class="text-red-500">*</span></label>
+        <select name="bank_id" required x-model="bankId" @change="branchId = ''"
+                class="block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+            <option value="">— Select —</option>
+            @foreach ($banks as $b)
+                <option value="{{ $b->id }}">{{ $b->bank_name }}</option>
+            @endforeach
+        </select>
+        @error('bank_id') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+    </div>
+
+    <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Branch <span class="text-slate-400 text-xs">(optional)</span></label>
+        <select name="branch_id" x-model="branchId" :disabled="!bankId"
+                class="block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm disabled:bg-slate-100">
+            <option value="">— Any branch —</option>
+            <template x-for="b in filtered" :key="b.id">
+                <option :value="b.id" x-text="b.label" :selected="String(b.id) === String(branchId)"></option>
+            </template>
+        </select>
+        <p class="mt-1 text-xs text-slate-500">Leave empty if template applies to all branches of the bank.</p>
+        @error('branch_id') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+    </div>
 
     <x-admin.input label="Template Name" name="template_name" :value="$template->template_name ?? ''" required />
     <x-admin.input label="Template Code" name="template_code" :value="$template->template_code ?? ''" required />

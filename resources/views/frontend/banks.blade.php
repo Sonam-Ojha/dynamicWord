@@ -19,7 +19,7 @@
     @else
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach ($banks as $bank)
-                <a href="{{ route('generate.templates', $bank) }}"
+                <a href="{{ route('generate.branches', $bank) }}"
                    class="group bg-white border border-slate-200 rounded-lg p-5 hover:border-indigo-500 hover:shadow-md transition">
                     <div class="flex items-center gap-4">
                         @if ($bank->logo)

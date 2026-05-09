@@ -59,6 +59,7 @@
                     <tr>
                         <th class="px-4 py-3 text-left">Document #</th>
                         <th class="px-4 py-3 text-left">Bank</th>
+                        <th class="px-4 py-3 text-left">Branch</th>
                         <th class="px-4 py-3 text-left">Template</th>
                         <th class="px-4 py-3 text-left">Status</th>
                         <th class="px-4 py-3 text-left">Created</th>
@@ -70,6 +71,7 @@
                         <tr class="hover:bg-slate-50">
                             <td class="px-4 py-3 font-medium font-mono text-xs">{{ $doc->document_number }}</td>
                             <td class="px-4 py-3">{{ $doc->bank?->bank_name }}</td>
+                            <td class="px-4 py-3 text-slate-600">{{ $doc->branch?->branch_name ?? '—' }}</td>
                             <td class="px-4 py-3">{{ $doc->template?->template_name }}</td>
                             <td class="px-4 py-3">
                                 @if ($doc->status === 'generated')
@@ -99,7 +101,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-12 text-center">
+                            <td colspan="7" class="px-4 py-12 text-center">
                                 <p class="text-slate-500 mb-3">No documents match your filters.</p>
                                 <a href="{{ route('generate.banks') }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                                     Generate a new document →

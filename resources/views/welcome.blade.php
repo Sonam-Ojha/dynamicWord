@@ -129,7 +129,7 @@
                         </svg>
                     </div>
                     <h3 class="font-semibold text-slate-900 text-lg">Multi-Bank</h3>
-                    <p class="text-sm text-slate-600 mt-2 leading-relaxed">Manage templates across multiple banks and categories.</p>
+                    <p class="text-sm text-slate-600 mt-2 leading-relaxed">Manage templates across multiple banks and branches.</p>
                 </div>
             </div>
         </div>
