@@ -16,9 +16,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $permissions = [
             'view dashboard',
             'manage banks',
+            'manage bank branches',
             'manage templates',
             'manage template fields',
-            'manage categories',
             'manage users',
             'manage documents',
             'manage signatures',
@@ -38,9 +38,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $admin->syncPermissions([
             'view dashboard',
             'manage banks',
+            'manage bank branches',
             'manage templates',
             'manage template fields',
-            'manage categories',
             'manage documents',
             'manage signatures',
             'view download logs',

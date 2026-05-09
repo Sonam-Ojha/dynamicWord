@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BankBranchController;
 use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DownloadLogController;
@@ -7,7 +8,6 @@ use App\Http\Controllers\Admin\GeneratedDocumentController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SignatureController;
-use App\Http\Controllers\Admin\TemplateCategoryController;
 use App\Http\Controllers\Admin\TemplateController;
 use App\Http\Controllers\Admin\TemplateFieldController;
 use App\Http\Controllers\Admin\UserController;
@@ -24,9 +24,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::patch('banks/{bank}/toggle-status', [BankController::class, 'toggleStatus'])->name('banks.toggle-status');
     });
 
-    Route::middleware('permission:manage categories')->group(function () {
-        Route::resource('categories', TemplateCategoryController::class);
-        Route::patch('categories/{category}/toggle-status', [TemplateCategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
+    Route::middleware('permission:manage bank branches')->group(function () {
+        Route::resource('bank-branches', BankBranchController::class)->parameters(['bank-branches' => 'bankBranch']);
+        Route::patch('bank-branches/{bankBranch}/toggle-status', [BankBranchController::class, 'toggleStatus'])->name('bank-branches.toggle-status');
     });
 
     Route::middleware('permission:manage templates')->group(function () {

@@ -28,7 +28,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [DocumentGenerationController::class, 'index'])->name('index');
         Route::get('/my-documents', [DocumentGenerationController::class, 'myDocuments'])->name('myDocuments');
         Route::get('/banks', [DocumentGenerationController::class, 'selectBank'])->name('banks');
-        Route::get('/banks/{bank}/templates', [DocumentGenerationController::class, 'selectTemplate'])->name('templates');
+        Route::get('/banks/{bank}/branches', [DocumentGenerationController::class, 'selectBranch'])->name('branches');
+        Route::get('/banks/{bank}/branches/{branch}/templates', [DocumentGenerationController::class, 'selectTemplate'])->name('templates');
         Route::get('/templates/{template}/form', [DocumentGenerationController::class, 'showForm'])->name('form');
         Route::post('/templates/{template}/generate', [DocumentGenerationController::class, 'generate'])->name('store');
         Route::get('/documents/{document}/edit', [DocumentGenerationController::class, 'editDraft'])->name('editDraft');
