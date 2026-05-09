@@ -10,8 +10,12 @@ return new class extends Migration
     {
         if (Schema::hasColumn('templates', 'category_id')) {
             Schema::table('templates', function (Blueprint $table) {
-                try { $table->dropIndex(['bank_id', 'category_id', 'status']); } catch (\Throwable $e) {}
                 try { $table->dropForeign(['category_id']); } catch (\Throwable $e) {}
+            });
+            Schema::table('templates', function (Blueprint $table) {
+                try { $table->dropIndex(['bank_id', 'category_id', 'status']); } catch (\Throwable $e) {}
+            });
+            Schema::table('templates', function (Blueprint $table) {
                 $table->dropColumn('category_id');
             });
         }
