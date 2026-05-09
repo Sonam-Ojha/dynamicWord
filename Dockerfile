@@ -15,7 +15,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader
 
 RUN npm install
-
+RUN ls -la public/build/assets
 RUN npm run build
 
 RUN chmod -R 775 storage bootstrap/cache
