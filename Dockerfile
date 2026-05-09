@@ -4,24 +4,26 @@ WORKDIR /var/www
 
 COPY . .
 
-# Install packages
+# Install system dependencies + Node.js
 RUN apt-get update && apt-get install -y \
-    unzip git curl libzip-dev zip nodejs npm \
+    unzip git curl libzip-dev zip gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
     && docker-php-ext-install zip pdo pdo_mysql
 
-# Composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# PHP dependencies
+# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Node dependencies
+# Install Node dependencies
 RUN npm install
 
 # Build Vite assets
 RUN npm run build
 
-# Permissions
+# Laravel permissions
 RUN chmod -R 775 storage bootstrap/cache
 
 EXPOSE 10000
