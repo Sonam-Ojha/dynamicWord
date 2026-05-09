@@ -7,18 +7,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Template extends Model
+class BankBranch extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'bank_id',
-        'branch_id',
-        'template_name',
-        'template_code',
-        'template_preview',
-        'html_content',
-        'description',
+        'branch_name',
+        'branch_code',
+        'ifsc_code',
+        'address',
+        'city',
+        'state',
+        'pincode',
+        'phone',
+        'email',
         'status',
     ];
 
@@ -31,24 +34,19 @@ class Template extends Model
         return $this->belongsTo(Bank::class);
     }
 
-    public function branch(): BelongsTo
-    {
-        return $this->belongsTo(BankBranch::class, 'branch_id');
-    }
-
-    public function fields(): HasMany
-    {
-        return $this->hasMany(TemplateField::class)->orderBy('sort_order');
-    }
-
     public function generatedDocuments(): HasMany
     {
-        return $this->hasMany(GeneratedDocument::class);
+        return $this->hasMany(GeneratedDocument::class, 'branch_id');
     }
 
     public function scopeActive($query)
     {
         return $query->where('status', true);
+    }
+
+    public function scopeForBank($query, $bankId)
+    {
+        return $query->where('bank_id', $bankId);
     }
 
     public function scopeSearch($query, ?string $term)
@@ -58,8 +56,10 @@ class Template extends Model
         }
 
         return $query->where(function ($q) use ($term) {
-            $q->where('template_name', 'like', "%{$term}%")
-              ->orWhere('template_code', 'like', "%{$term}%");
+            $q->where('branch_name', 'like', "%{$term}%")
+              ->orWhere('branch_code', 'like', "%{$term}%")
+              ->orWhere('ifsc_code', 'like', "%{$term}%")
+              ->orWhere('city', 'like', "%{$term}%");
         });
     }
 }

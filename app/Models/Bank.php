@@ -27,6 +27,16 @@ class Bank extends Model
         return $this->hasMany(Template::class);
     }
 
+    public function branches(): HasMany
+    {
+        return $this->hasMany(BankBranch::class);
+    }
+
+    public function activeBranches(): HasMany
+    {
+        return $this->hasMany(BankBranch::class)->where('status', true);
+    }
+
     public function generatedDocuments(): HasMany
     {
         return $this->hasMany(GeneratedDocument::class);

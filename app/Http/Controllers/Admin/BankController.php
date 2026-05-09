@@ -19,6 +19,7 @@ class BankController extends Controller
     public function index(Request $request): View
     {
         $banks = Bank::query()
+            ->withCount('branches')
             ->search($request->input('q'))
             ->latest()
             ->paginate(15)

@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TemplateRequest;
 use App\Models\Bank;
+use App\Models\BankBranch;
 use App\Models\Template;
-use App\Models\TemplateCategory;
 use App\Services\FileUploadService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,26 +21,24 @@ class TemplateController extends Controller
     public function index(Request $request): View
     {
         $templates = Template::query()
-            ->with(['bank', 'category'])
+            ->with(['bank', 'branch'])
             ->search($request->input('q'))
             ->when($request->input('bank_id'), fn ($q, $v) => $q->where('bank_id', $v))
-            ->when($request->input('category_id'), fn ($q, $v) => $q->where('category_id', $v))
             ->latest()
             ->paginate(15)
             ->withQueryString();
 
         $banks = Bank::active()->get(['id', 'bank_name']);
-        $categories = TemplateCategory::active()->get(['id', 'category_name']);
 
-        return view('admin.templates.index', compact('templates', 'banks', 'categories'));
+        return view('admin.templates.index', compact('templates', 'banks'));
     }
 
     public function create(): View
     {
         $banks = Bank::active()->get(['id', 'bank_name']);
-        $categories = TemplateCategory::active()->get(['id', 'category_name']);
+        $branches = BankBranch::active()->orderBy('branch_name')->get(['id', 'bank_id', 'branch_name', 'branch_code']);
 
-        return view('admin.templates.create', compact('banks', 'categories'));
+        return view('admin.templates.create', compact('banks', 'branches'));
     }
 
     public function store(TemplateRequest $request): RedirectResponse
@@ -60,9 +58,9 @@ class TemplateController extends Controller
     public function edit(Template $template): View
     {
         $banks = Bank::active()->get(['id', 'bank_name']);
-        $categories = TemplateCategory::active()->get(['id', 'category_name']);
+        $branches = BankBranch::active()->orderBy('branch_name')->get(['id', 'bank_id', 'branch_name', 'branch_code']);
 
-        return view('admin.templates.edit', compact('template', 'banks', 'categories'));
+        return view('admin.templates.edit', compact('template', 'banks', 'branches'));
     }
 
     public function update(TemplateRequest $request, Template $template): RedirectResponse

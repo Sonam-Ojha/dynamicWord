@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bank;
+use App\Models\BankBranch;
 use App\Models\DocumentDownload;
 use App\Models\GeneratedDocument;
 use App\Models\Template;
@@ -32,7 +33,7 @@ class DocumentGenerationController extends Controller
         ];
 
         $myDocs = GeneratedDocument::where('user_id', $userId)
-            ->with(['bank', 'template'])
+            ->with(['bank', 'branch', 'template'])
             ->latest()
             ->limit(10)
             ->get();
@@ -46,7 +47,7 @@ class DocumentGenerationController extends Controller
 
         $documents = GeneratedDocument::query()
             ->where('user_id', $userId)
-            ->with(['bank', 'template'])
+            ->with(['bank', 'branch', 'template'])
             ->when($request->input('q'), fn ($q, $v) => $q->where('document_number', 'like', "%{$v}%"))
             ->when($request->input('status'), fn ($q, $v) => $q->where('status', $v))
             ->when($request->input('bank_id'), fn ($q, $v) => $q->where('bank_id', $v))
@@ -70,17 +71,27 @@ class DocumentGenerationController extends Controller
         return view('frontend.banks', compact('banks'));
     }
 
-    public function selectTemplate(Bank $bank): View
+    public function selectBranch(Bank $bank): View
     {
         abort_unless($bank->status, 404);
 
+        $branches = $bank->activeBranches()->orderBy('branch_name')->get();
+
+        return view('frontend.branches', compact('bank', 'branches'));
+    }
+
+    public function selectTemplate(Bank $bank, BankBranch $branch): View
+    {
+        abort_unless($bank->status, 404);
+        abort_unless($branch->status && $branch->bank_id === $bank->id, 404);
+
         $templates = $bank->templates()
             ->where('status', true)
-            ->with('category')
+            ->where(fn ($q) => $q->whereNull('branch_id')->orWhere('branch_id', $branch->id))
             ->orderBy('template_name')
             ->get();
 
-        return view('frontend.templates', compact('bank', 'templates'));
+        return view('frontend.templates', compact('bank', 'branch', 'templates'));
     }
 
     public function showForm(Template $template): View
@@ -89,11 +100,12 @@ class DocumentGenerationController extends Controller
 
         $template->load([
             'bank',
-            'category',
             'fields' => fn ($q) => $q->where('status', true)->orderBy('sort_order'),
         ]);
 
-        return view('frontend.form', compact('template'));
+        $branches = BankBranch::active()->forBank($template->bank_id)->orderBy('branch_name')->get();
+
+        return view('frontend.form', compact('template', 'branches'));
     }
 
     public function generate(Request $request, Template $template): RedirectResponse
@@ -104,12 +116,14 @@ class DocumentGenerationController extends Controller
         $isDraft = $request->input('action') === 'draft';
 
         $this->validateFields($request, $fields, $isDraft);
+        $branchId = $this->validateBranch($request, $template->bank_id, $isDraft);
 
         $data = $this->collectFieldData($request, $fields);
 
         $document = GeneratedDocument::create([
             'user_id' => auth()->id(),
             'bank_id' => $template->bank_id,
+            'branch_id' => $branchId,
             'template_id' => $template->id,
             'document_number' => $this->makeDocumentNumber($template),
             'form_data' => $data,
@@ -134,11 +148,12 @@ class DocumentGenerationController extends Controller
 
         $template->load([
             'bank',
-            'category',
             'fields' => fn ($q) => $q->where('status', true)->orderBy('sort_order'),
         ]);
 
-        return view('frontend.form', compact('template', 'document'));
+        $branches = BankBranch::active()->forBank($template->bank_id)->orderBy('branch_name')->get();
+
+        return view('frontend.form', compact('template', 'document', 'branches'));
     }
 
     public function updateDraft(Request $request, GeneratedDocument $document): RedirectResponse
@@ -153,17 +168,33 @@ class DocumentGenerationController extends Controller
         $isDraft = $request->input('action') === 'draft';
 
         $this->validateFields($request, $fields, $isDraft);
+        $branchId = $this->validateBranch($request, $template->bank_id, $isDraft);
 
         $existing = $document->form_data ?? [];
         $data = $this->collectFieldData($request, $fields, $existing);
 
-        $document->update(['form_data' => $data]);
+        $document->update([
+            'form_data' => $data,
+            'branch_id' => $branchId ?? $document->branch_id,
+        ]);
 
         if ($isDraft) {
             return redirect()->route('generate.editDraft', $document)->with('success', 'Draft updated.');
         }
 
         return redirect()->route('generate.preview', $document);
+    }
+
+    private function validateBranch(Request $request, int $bankId, bool $isDraft): ?int
+    {
+        $rule = ['nullable', 'integer', \Illuminate\Validation\Rule::exists('bank_branches', 'id')->where('bank_id', $bankId)];
+        if (! $isDraft) {
+            $rule[0] = 'required';
+        }
+
+        $validated = $request->validate(['branch_id' => $rule]);
+
+        return $validated['branch_id'] ?? null;
     }
 
     private function validateFields(Request $request, $fields, bool $isDraft): void
@@ -238,7 +269,7 @@ class DocumentGenerationController extends Controller
     public function preview(GeneratedDocument $document): View
     {
         $this->authorizeDocument($document);
-        $document->load(['bank', 'template.fields']);
+        $document->load(['bank', 'branch', 'template.fields']);
 
         $rendered = $this->renderHtml($document);
 
@@ -248,7 +279,7 @@ class DocumentGenerationController extends Controller
     public function finalize(GeneratedDocument $document): RedirectResponse
     {
         $this->authorizeDocument($document);
-        $document->load(['bank', 'template.fields']);
+        $document->load(['bank', 'branch', 'template.fields']);
 
         $rendered = $this->renderHtml($document);
         $path = 'documents/'.$document->document_number.'.html';
@@ -265,7 +296,7 @@ class DocumentGenerationController extends Controller
     public function print(GeneratedDocument $document): View
     {
         $this->authorizeDocument($document);
-        $document->load(['bank', 'template.fields']);
+        $document->load(['bank', 'branch', 'template.fields']);
 
         $rendered = $this->renderHtml($document);
 
@@ -359,6 +390,24 @@ HTML;
     {
         $html = (string) ($document->template->html_content ?? '');
         $fields = $document->template->fields->keyBy('field_name');
+
+        $branch = $document->branch;
+        $branchPlaceholders = [
+            'branch_name' => $branch->branch_name ?? '',
+            'branch_code' => $branch->branch_code ?? '',
+            'ifsc_code' => $branch->ifsc_code ?? '',
+            'branch_address' => $branch->address ?? '',
+            'branch_city' => $branch->city ?? '',
+            'branch_state' => $branch->state ?? '',
+            'branch_pincode' => $branch->pincode ?? '',
+            'branch_phone' => $branch->phone ?? '',
+            'branch_email' => $branch->email ?? '',
+            'bank_name' => $document->bank->bank_name ?? '',
+            'bank_code' => $document->bank->bank_code ?? '',
+        ];
+        foreach ($branchPlaceholders as $key => $value) {
+            $html = str_replace(['{'.$key.'}', '{{'.$key.'}}'], e((string) $value), $html);
+        }
 
         foreach (($document->form_data ?? []) as $key => $value) {
             $field = $fields->get($key);

@@ -18,7 +18,10 @@ class TemplateRequest extends FormRequest
 
         return [
             'bank_id' => ['required', 'exists:banks,id'],
-            'category_id' => ['required', 'exists:template_categories,id'],
+            'branch_id' => [
+                'nullable',
+                Rule::exists('bank_branches', 'id')->where(fn ($q) => $q->where('bank_id', $this->input('bank_id'))),
+            ],
             'template_name' => ['required', 'string', 'max:255'],
             'template_code' => ['required', 'string', 'max:100', Rule::unique('templates', 'template_code')->ignore($templateId)],
             'template_preview' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],

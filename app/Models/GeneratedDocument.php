@@ -13,6 +13,7 @@ class GeneratedDocument extends Model
     protected $fillable = [
         'user_id',
         'bank_id',
+        'branch_id',
         'template_id',
         'document_number',
         'form_data',
@@ -32,6 +33,11 @@ class GeneratedDocument extends Model
     public function bank(): BelongsTo
     {
         return $this->belongsTo(Bank::class);
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(BankBranch::class, 'branch_id');
     }
 
     public function template(): BelongsTo
