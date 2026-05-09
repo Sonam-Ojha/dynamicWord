@@ -15,7 +15,7 @@ class AdminUserSeeder extends Seeder
             [
                 'name' => 'Super Admin',
                 'phone' => '0000000000',
-                'password' => Hash::make('password'),
+                'password' => Hash::make('Sup@rAdm!n#2026$Xy9'),
                 'status' => true,
                 'email_verified_at' => now(),
             ]
@@ -27,7 +27,7 @@ class AdminUserSeeder extends Seeder
             [
                 'name' => 'Admin User',
                 'phone' => '1111111111',
-                'password' => Hash::make('password'),
+                'password' => Hash::make('Adm!n#Dyn@m1c2026$Pq7'),
                 'status' => true,
                 'email_verified_at' => now(),
             ]
@@ -39,7 +39,7 @@ class AdminUserSeeder extends Seeder
             [
                 'name' => 'Operator User',
                 'phone' => '2222222222',
-                'password' => Hash::make('password'),
+                'password' => Hash::make('Op3r@tor#2026$Mn4Kz'),
                 'status' => true,
                 'email_verified_at' => now(),
             ]
