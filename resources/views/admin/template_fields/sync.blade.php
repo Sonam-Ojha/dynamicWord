@@ -54,7 +54,7 @@
         @if ($missing->count() > 0)
             <x-admin.card title="Missing Placeholders — Bulk Create">
                 <p class="text-sm text-slate-600 mb-4">
-                    Ye placeholders HTML me hain but abhi tak field create nahi hue. Type & Required check karke bulk create karo.
+                    These placeholders are present in the template HTML but fields have not been created for them yet. Review the Type and Required options below, then create them in bulk.
                 </p>
 
                 <form method="POST" action="{{ route('admin.templates.fields.bulk-sync', $template) }}">
