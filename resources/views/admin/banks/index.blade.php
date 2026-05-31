@@ -29,8 +29,8 @@
                     @forelse ($banks as $bank)
                         <tr class="hover:bg-slate-50">
                             <td class="px-4 py-3">
-                                @if ($bank->logo)
-                                    <img src="{{ asset('storage/'.$bank->logo) }}" class="w-10 h-10 rounded object-cover" alt="">
+                                @if ($bank->logo && \Illuminate\Support\Facades\Storage::disk('public')->exists($bank->logo))
+                                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($bank->logo) }}" class="w-10 h-10 rounded object-cover" alt="">
                                 @else
                                     <div class="w-10 h-10 rounded bg-slate-100 flex items-center justify-center text-slate-400 text-xs">N/A</div>
                                 @endif

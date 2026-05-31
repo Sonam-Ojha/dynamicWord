@@ -11,8 +11,8 @@
     <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Logo</label>
         <input type="file" name="logo" accept="image/*" class="block w-full text-sm">
-        @if (! empty($bank->logo))
-            <img src="{{ asset('storage/'.$bank->logo) }}" class="mt-2 w-16 h-16 rounded object-cover border" alt="">
+        @if (! empty($bank->logo) && \Illuminate\Support\Facades\Storage::disk('public')->exists($bank->logo))
+            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($bank->logo) }}" class="mt-2 w-16 h-16 rounded object-cover border" alt="">
         @endif
         @error('logo') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
     </div>
