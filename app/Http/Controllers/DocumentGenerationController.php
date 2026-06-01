@@ -406,7 +406,7 @@ HTML;
             'bank_code' => $document->bank->bank_code ?? '',
         ];
         foreach ($branchPlaceholders as $key => $value) {
-            $html = str_replace(['{'.$key.'}', '{{'.$key.'}}'], e((string) $value), $html);
+            $html = $this->replacePlaceholder($html, $key, e((string) $value));
         }
 
         foreach (($document->form_data ?? []) as $key => $value) {
@@ -420,10 +420,17 @@ HTML;
                 $replacement = e($val);
             }
 
-            $html = str_replace(['{'.$key.'}', '{{'.$key.'}}'], $replacement, $html);
+            $html = $this->replacePlaceholder($html, $key, $replacement);
         }
 
         return $html;
+    }
+
+    private function replacePlaceholder(string $html, string $key, string $replacement): string
+    {
+        $pattern = '/\{\{?\s*'.preg_quote($key, '/').'\s*\}?\}/';
+
+        return preg_replace_callback($pattern, fn () => $replacement, $html) ?? $html;
     }
 
     private function wrapPrintable(GeneratedDocument $document, string $body): string
