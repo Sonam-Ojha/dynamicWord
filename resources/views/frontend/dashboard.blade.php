@@ -3,9 +3,24 @@
 @section('title', 'Dashboard')
 
 @section('content')
-    <div class="mb-6">
-        <h1 class="text-2xl font-semibold text-slate-900">Dashboard</h1>
-        <p class="text-sm text-slate-500">Welcome back, {{ auth()->user()->name }}.</p>
+    @php
+        $hour = now()->hour;
+        $greeting = match (true) {
+            $hour < 12 => 'Good morning',
+            $hour < 17 => 'Good afternoon',
+            default => 'Good evening',
+        };
+    @endphp
+
+    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold text-slate-900">{{ $greeting }}, {{ auth()->user()->name }}</h1>
+            <p class="text-sm text-slate-500 mt-1">Track your documents, continue drafts, and generate new bank documents from one place.</p>
+        </div>
+        <a href="{{ route('generate.banks') }}"
+           class="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 sm:shrink-0">
+            + New Document
+        </a>
     </div>
 
     {{-- Stat cards --}}
