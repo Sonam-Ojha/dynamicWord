@@ -120,11 +120,6 @@
 
                     <div class="flex-1"></div>
 
-                    <a href="{{ route('generate.banks') }}"
-                       class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-md bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700">
-                        + New Document
-                    </a>
-
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open" class="flex items-center gap-2 text-sm">
                             @if (auth()->user()->profile_image)
