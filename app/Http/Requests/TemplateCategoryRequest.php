@@ -8,7 +8,7 @@ class TemplateCategoryRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('manage categories') ?? false;
+        return true;
     }
 
     public function rules(): array

@@ -9,7 +9,7 @@ class BankBranchRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('manage bank branches') ?? false;
+        return true;
     }
 
     public function rules(): array

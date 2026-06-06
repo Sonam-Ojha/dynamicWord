@@ -10,7 +10,7 @@ class UserRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('manage users') ?? false;
+        return true;
     }
 
     public function rules(): array

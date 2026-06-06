@@ -9,7 +9,7 @@ class RoleRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('manage roles') ?? false;
+        return true;
     }
 
     public function rules(): array
