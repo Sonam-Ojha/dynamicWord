@@ -27,7 +27,13 @@
                 <tbody class="divide-y divide-slate-200">
                     @forelse ($signatures as $sig)
                         <tr class="hover:bg-slate-50">
-                            <td class="px-4 py-3"><img src="{{ asset('storage/'.$sig->signature_path) }}" class="h-10" alt=""></td>
+                            <td class="px-4 py-3">
+                                @if ($sig->signature_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($sig->signature_path))
+                                    <img src="{{ asset('storage/'.$sig->signature_path) }}" class="h-10" alt="">
+                                @else
+                                    <span class="text-xs text-slate-400">—</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-3 font-medium">{{ $sig->signature_name }}</td>
                             <td class="px-4 py-3">{{ $sig->user?->name }}</td>
                             <td class="px-4 py-3"><x-admin.status-badge :active="$sig->status" /></td>

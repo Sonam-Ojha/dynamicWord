@@ -22,7 +22,7 @@
                 <a href="{{ route('generate.branches', $bank) }}"
                    class="group bg-white border border-slate-200 rounded-lg p-5 hover:border-indigo-500 hover:shadow-md transition">
                     <div class="flex items-center gap-4">
-                        @if ($bank->logo)
+                        @if ($bank->logo && \Illuminate\Support\Facades\Storage::disk('public')->exists($bank->logo))
                             <img src="{{ asset('storage/'.$bank->logo) }}" class="w-14 h-14 rounded object-cover" alt="">
                         @else
                             <div class="w-14 h-14 rounded bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xl">

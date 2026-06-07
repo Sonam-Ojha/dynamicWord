@@ -48,8 +48,8 @@
 
     <x-admin.card>
         <p class="text-sm text-slate-600 mb-4">
-            Operator form me sirf <span class="font-semibold text-emerald-700">visible (✅)</span> fields hi dikhenge.
-            Selection bulk me toggle karne ke liye row checkboxes use karo.
+            Only <span class="font-semibold text-emerald-700">visible (✅)</span> fields will be shown in the operator form.
+            Use row checkboxes to bulk toggle the selection.
         </p>
 
         <form method="POST" action="{{ route('admin.templates.fields.bulk-toggle', $template) }}"

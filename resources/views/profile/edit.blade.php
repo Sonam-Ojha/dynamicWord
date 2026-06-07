@@ -67,7 +67,7 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('profile.update') }}" class="space-y-4">
+                <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="space-y-4">
                     @csrf
                     @method('PATCH')
 
@@ -85,6 +85,22 @@
                                required autocomplete="username"
                                class="block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                         @error('email') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Profile Image</label>
+                        <div class="flex items-center gap-4">
+                            @if (auth()->user()->profile_image)
+                                <img src="{{ asset('storage/'.auth()->user()->profile_image) }}"
+                                     class="w-12 h-12 rounded-full object-cover border" alt="">
+                            @else
+                                <div class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                </div>
+                            @endif
+                            <input type="file" name="profile_image" accept="image/*" class="block text-sm">
+                        </div>
+                        @error('profile_image') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="flex items-center gap-3 pt-2">

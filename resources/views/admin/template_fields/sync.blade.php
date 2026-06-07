@@ -43,8 +43,8 @@
     @if (count($analysis) === 0)
         <x-admin.card>
             <div class="text-center py-10 text-slate-500">
-                Koi placeholder detect nahi hua. Template HTML me <code class="bg-slate-100 px-1 rounded">{field_name}</code> ya
-                <code class="bg-slate-100 px-1 rounded">@{{field_name}}</code> daalo, fir is page par wapas aao.
+                No placeholders detected. Add <code class="bg-slate-100 px-1 rounded">{field_name}</code> or
+                <code class="bg-slate-100 px-1 rounded">@{{field_name}}</code> in the template HTML, then come back to this page.
             </div>
             <div class="mt-4 text-center">
                 <x-admin.button :href="route('admin.templates.edit', $template)">Edit Template HTML</x-admin.button>
@@ -126,9 +126,9 @@
 
         @if (count($orphans) > 0)
             <div class="mt-6">
-                <x-admin.card title="⚠ Orphan Fields (HTML me placeholder nahi hai)">
+                <x-admin.card title="⚠ Orphan Fields (no placeholder in HTML)">
                     <p class="text-sm text-slate-600 mb-3">
-                        Ye fields create hue hain but template HTML me unka placeholder ab nahi hai. Manually delete karna chahe toh kar sakte ho.
+                        These fields exist but their placeholder is no longer present in the template HTML. You can manually delete them if needed.
                     </p>
                     <div class="flex flex-wrap gap-2">
                         @foreach ($orphans as $name)

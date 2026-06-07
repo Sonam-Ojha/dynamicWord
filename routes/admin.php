@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\BankBranchController;
 use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DownloadLogController;
+use App\Http\Controllers\Admin\DraftReminderController;
 use App\Http\Controllers\Admin\GeneratedDocumentController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
@@ -65,5 +66,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::middleware('permission:view download logs')->group(function () {
         Route::get('download-logs', [DownloadLogController::class, 'index'])->name('download-logs.index');
+    });
+
+    Route::middleware('permission:manage users')->group(function () {
+        Route::get('draft-reminders', [DraftReminderController::class, 'index'])->name('draft-reminders.index');
+        Route::post('draft-reminders/send-all', [DraftReminderController::class, 'sendAll'])->name('draft-reminders.send-all');
+        Route::post('draft-reminders/{user}/send', [DraftReminderController::class, 'sendOne'])->name('draft-reminders.send-one');
     });
 });

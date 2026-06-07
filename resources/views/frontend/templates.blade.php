@@ -29,7 +29,7 @@
                 <a href="{{ route('generate.form', ['template' => $template, 'branch' => $branch->id]) }}"
                    class="group bg-white border border-slate-200 rounded-lg overflow-hidden hover:border-indigo-500 hover:shadow-md transition flex flex-col">
                     <div class="aspect-video bg-slate-100 flex items-center justify-center overflow-hidden">
-                        @if ($template->template_preview)
+                        @if ($template->template_preview && \Illuminate\Support\Facades\Storage::disk('public')->exists($template->template_preview))
                             <img src="{{ asset('storage/'.$template->template_preview) }}" class="w-full h-full object-cover" alt="">
                         @else
                             <span class="text-slate-400 text-sm">No preview</span>
